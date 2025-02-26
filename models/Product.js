@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema({
-  barcodeId: { type: String, required: true, unique: true },
+  barcodeIds: { type: [String], required: true }, // Array untuk menyimpan banyak barcode
   name: { type: String, required: true },
   price: { type: Number, required: true },
   qty: { type: Number, required: true },

@@ -3,16 +3,17 @@ import dbConnect from "@/lib/dbConnect";
 import Product from "@/models/Product";
 
 // CARI PRODUK BERDASARKAN BARCODE (GET)
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
     await dbConnect();
-    const { barcode } = params;
+    const { barcode } = await context.params;
 
     if (!barcode) {
       return NextResponse.json({ message: "Barcode tidak boleh kosong!" }, { status: 400 });
     }
 
-    const product = await Product.findOne({ barcodeId: barcode });
+    // Cari produk berdasarkan barcode dalam array barcodeIds
+    const product = await Product.findOne({ barcodeIds: barcode });
 
     if (!product) {
       return NextResponse.json({ message: "Produk tidak ditemukan!" }, { status: 404 });

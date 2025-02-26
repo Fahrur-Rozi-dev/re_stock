@@ -13,8 +13,8 @@ export async function POST(req) {
       return NextResponse.json({ message: "Data tidak valid!" }, { status: 400 });
     }
 
-    // Cari produk berdasarkan barcode
-    const product = await Product.findOne({ barcodeId });
+    // Cari produk berdasarkan barcode dalam array barcodeIds
+    const product = await Product.findOne({ barcodeIds: barcodeId });
 
     if (!product) {
       return NextResponse.json({ message: "Produk tidak ditemukan!" }, { status: 404 });

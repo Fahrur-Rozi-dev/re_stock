@@ -51,9 +51,10 @@ const ProductsPage = () => {
               key={product._id}
               className="bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition-all flex flex-col justify-between"
             >
-              {/* Nama Produk */}
+              {/* Nama Produk dan barcode id*/}
               <h2 className="text-lg font-semibold text-gray-900">{product.name}</h2>
-              <p className="text-sm text-gray-500">Barcode: {product.barcodeId}</p>
+              <p className="text-sm text-gray-500">Barcode: {product.barcodeIds.join(", ")}</p>
+
 
               {/* Harga & Stok */}
               <div className="mt-3">
