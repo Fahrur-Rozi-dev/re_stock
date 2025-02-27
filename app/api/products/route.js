@@ -6,24 +6,29 @@ export async function POST(req) {
   try {
     await dbConnect();
     const body = await req.json();
-    let { barcodeId, name, price, qty, details } = body;
+    let { barcodeId, name, sell_price, buy_price, qty, details } = body;
 
-    qty = Number(qty); // Pastikan qty jadi angka agar tidak ada kesalahan penjumlahan
+    qty = Number(qty);
+    sell_price = Number(sell_price);
+    buy_price = Number(buy_price);
 
-    // Cek apakah produk dengan nama yang sama sudah ada
     let existingProduct = await Product.findOne({ name });
 
     if (existingProduct) {
-      // Jika barcode belum ada di array, tambahkan
       if (!existingProduct.barcodeIds.includes(barcodeId)) {
         existingProduct.barcodeIds.push(barcodeId);
       }
 
-      // Tambahkan stok qty
-      existingProduct.qty += qty;
+      const totalQty = existingProduct.qty + qty;
+      const totalBuyPrice = existingProduct.avg_harga_beli * existingProduct.qty + buy_price * qty;
+      const newAvgBuyPrice = totalBuyPrice / totalQty;
 
-      // Update harga & detail (jika ingin diupdate)
-      existingProduct.price = price;
+      existingProduct.qty = totalQty;
+      existingProduct.sell_price = sell_price;
+      existingProduct.buy_price = buy_price;
+      existingProduct.avg_harga_beli = newAvgBuyPrice;
+      existingProduct.profit = sell_price - newAvgBuyPrice;
+      existingProduct.total_profit = existingProduct.profit * totalQty;
       existingProduct.details = details;
 
       await existingProduct.save();
@@ -34,13 +39,16 @@ export async function POST(req) {
       );
     }
 
-    // Jika produk belum ada, buat baru
     const newProduct = new Product({
-      barcodeIds: [barcodeId], // Simpan dalam array
+      barcodeIds: [barcodeId],
       name,
-      price,
+      sell_price,
+      buy_price,
+      avg_harga_beli: buy_price,
+      profit: sell_price - buy_price,
+      total_profit: (sell_price - buy_price) * qty,
       qty,
-      details
+      details,
     });
 
     await newProduct.save();
@@ -61,28 +69,35 @@ export async function POST(req) {
 // export async function GET() {
 //   try {
 //     await dbConnect();
-//     const products = await Product.find(); // Ambil semua data produk
-//     return NextResponse.json({ data: products }, { status: 200 });
+
+//     // Ambil semua produk
+//     const products = await Product.find({}, "name barcodeIds price qty details");
+
+//     return NextResponse.json({ message: "Produk ditemukan", data: products }, { status: 200 });
 //   } catch (error) {
-//     console.error("Error mengambil produk:", error);
-//     return NextResponse.json({ message: "Gagal mengambil produk", error }, { status: 500 });
+//     return NextResponse.json(
+//       { message: "Gagal mengambil produk", error: error.message },
+//       { status: 500 }
+//     );
 //   }
 // }
 
 
-export async function GET() {
+export async function GET(req) {
   try {
     await dbConnect();
+    const { searchParams } = new URL(req.url);
+    const name = searchParams.get("name");
 
-    // Ambil semua produk
-    const products = await Product.find({}, "name barcodeIds price qty details");
+    if (!name) return NextResponse.json({ product: null }, { status: 200 });
 
-    return NextResponse.json({ message: "Produk ditemukan", data: products }, { status: 200 });
+    const product = await Product.findOne({ name });
+
+    return NextResponse.json({ product }, { status: 200 });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Gagal mengambil produk", error: error.message },
-      { status: 500 }
-    );
+    console.error("Error fetching product:", error);
+    return NextResponse.json({ message: "Error fetching product", error }, { status: 500 });
   }
 }
+
 
