@@ -10,7 +10,7 @@ const ProductsPage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch("/api/products/get-all");
         const data = await res.json();
 
         if (Array.isArray(data.data)) {
@@ -28,6 +28,24 @@ const ProductsPage = () => {
     fetchProducts();
   }, []);
 
+  // Fungsi untuk menghapus produk
+  const deleteProduct = async (id) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus produk ini?")) return;
+
+    try {
+      const res = await fetch(`/api/products/delete/${id}`, { method: "DELETE" });
+      const data = await res.json();
+
+      if (data.success) {
+        setProducts((prev) => prev.filter((product) => product._id !== id));
+      } else {
+        alert("Gagal menghapus produk: " + data.message);
+      }
+    } catch (error) {
+      console.error("Gagal menghapus produk:", error);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
@@ -39,7 +57,7 @@ const ProductsPage = () => {
           onClick={() => router.push("/")}
           className="bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition flex items-center gap-2 shadow-md"
         >
-          ⬅ Kembali
+          ⬅️ Kembali
         </button>
       </div>
 
@@ -51,25 +69,37 @@ const ProductsPage = () => {
               key={product._id}
               className="bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition-all flex flex-col justify-between"
             >
-              {/* Nama Produk dan barcode id*/}
+              {/* Nama Produk & Barcode */}
               <h2 className="text-lg font-semibold text-gray-900">{product.name}</h2>
               <p className="text-sm text-gray-500">Barcode: {product.barcodeIds.join(", ")}</p>
 
-
-              {/* Harga & Stok */}
+              {/* Harga & Profit */}
               <div className="mt-3">
-                <p className="text-gray-700 font-medium text-lg">
-                  💰 Rp {product.price.toLocaleString("id-ID")}
+                <p className="text-gray-700 font-medium">
+                  💰 Harga Jual: Rp {product.sell_price.toLocaleString("id-ID")}
                 </p>
+                <p className="text-gray-500 text-sm">
+                  🏷️ Harga Beli Rata-rata: Rp {product.avg_harga_beli.toLocaleString("id-ID")}
+                </p>
+                <p className="text-green-600 text-sm font-semibold">
+                  📈 Keuntungan per Item: Rp {product.profit.toLocaleString("id-ID")}
+                </p>
+              </div>
+
+              {/* Stok & Profit */}
+              <div className="mt-3">
                 <p
-                  className={`text-sm font-semibold mt-1 ${
+                  className={`text-sm font-semibold ${
                     product.qty <= 5 ? "text-red-500" : "text-green-600"
                   }`}
                 >
                   📦 Stok: {product.qty} {product.qty <= 5 && "(Hampir Habis)"}
                 </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  🔢 Total Value: Rp {(product.qty * product.price).toLocaleString("id-ID")}
+                <p className="text-blue-600 text-sm font-semibold">
+                  👒 Total Profit: Rp {product.total_profit.toLocaleString("id-ID")}
+                </p>
+                <p className="text-purple-600 text-sm font-semibold">
+                  💵 Realized Profit: Rp {product.realized_profit?.toLocaleString("id-ID") || 0}
                 </p>
               </div>
 
@@ -82,7 +112,7 @@ const ProductsPage = () => {
                   ✏ Edit
                 </button>
                 <button
-                  onClick={() => router.push(`/delete/${product._id}`)}
+                  onClick={() => deleteProduct(product._id)}
                   className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition flex-1"
                 >
                   🗑 Hapus

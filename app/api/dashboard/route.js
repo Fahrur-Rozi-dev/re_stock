@@ -15,19 +15,32 @@ export async function GET() {
     // Hitung total stok (jumlah semua qty produk)
     const totalStock = products.reduce((sum, product) => sum + product.qty, 0);
 
+    // Hitung total nilai stok berdasarkan harga jual
+    const totalValue = products.reduce(
+      (sum, product) => sum + product.sell_price * product.qty,
+      0
+    );
+
+    // Hitung unrealized profit (keuntungan potensial jika semua produk terjual)
+    const unrealizedProfit = products.reduce(
+      (sum, product) => sum + (product.sell_price - product.buy_price) * product.qty,
+      0
+    );
+
+    // Hitung realized profit (keuntungan yang sudah didapat)
+    const realizedProfit = products.reduce(
+      (sum, product) => sum + (product.realized_profit || 0),
+      0
+    );
+
     // Cari produk dengan stok 0 atau hampir habis (misalnya <= 5)
     const lowStockProducts = products.filter((product) => product.qty <= 5);
 
     // Cari produk dengan stok terbanyak (pastikan array tidak kosong)
     const highStockProduct =
       products.length > 0
-        ? products.reduce((max, product) =>
-            product.qty > max.qty ? product : max
-          )
+        ? products.reduce((max, product) => (product.qty > max.qty ? product : max))
         : null;
-
-    const totalValue = products.reduce((sum, product) => sum + (product.price * product.qty), 0);
-
 
     return NextResponse.json({
       success: true,
@@ -35,6 +48,8 @@ export async function GET() {
         totalProducts,
         totalStock,
         totalValue,
+        unrealizedProfit,
+        realizedProfit,
         lowStockProducts,
         highStockProduct,
       },

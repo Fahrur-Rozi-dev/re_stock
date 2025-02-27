@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Product from "@/models/Product";
 
-// API untuk menangani penjualan
 export async function POST(req) {
   try {
     await dbConnect();
@@ -13,7 +12,7 @@ export async function POST(req) {
       return NextResponse.json({ message: "Data tidak valid!" }, { status: 400 });
     }
 
-    // Cari produk berdasarkan barcode dalam array barcodeIds
+    // Cari produk berdasarkan barcode
     const product = await Product.findOne({ barcodeIds: barcodeId });
 
     if (!product) {
@@ -25,8 +24,14 @@ export async function POST(req) {
       return NextResponse.json({ message: "Stok tidak mencukupi!" }, { status: 400 });
     }
 
-    // Kurangi stok
+    // Hitung realized_profit
+    const realizedProfit = (product.sell_price - product.avg_harga_beli) * qty;
+
+    // Perbarui produk
     product.qty -= qty;
+    product.realized_profit = (product.realized_profit || 0) + realizedProfit;
+    product.total_profit = product.profit * product.qty; // Update total profit berdasarkan stok tersisa
+
     await product.save();
 
     return NextResponse.json(

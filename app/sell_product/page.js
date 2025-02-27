@@ -4,7 +4,6 @@ import { useState } from "react";
 import BarcodeScanner from "../scan/page";
 import { useRouter } from "next/navigation"; // Import useRouter untuk redirect
 
-
 const SellPage = () => {
   const router = useRouter();
   const [barcode, setBarcode] = useState("");
@@ -28,11 +27,6 @@ const SellPage = () => {
 
       if (!res.ok) {
         throw new Error("Produk tidak ditemukan!");
-      }
-
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Format response tidak valid!");
       }
 
       const data = await res.json();
@@ -112,7 +106,7 @@ const SellPage = () => {
       {product && (
         <div className="mt-4 p-4 border rounded bg-gray-100">
           <h3 className="text-lg font-bold">{product.name}</h3>
-          <p>Harga: Rp {product.price.toLocaleString("id-ID")}</p>
+          <p>Harga Jual: Rp {product.sell_price.toLocaleString("id-ID")}</p>
           <p>Stok: {product.qty} pcs</p>
 
           {/* Input Jumlah yang Dijual */}

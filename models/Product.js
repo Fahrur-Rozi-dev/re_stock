@@ -8,6 +8,7 @@ const ProductSchema = new mongoose.Schema({
   avg_harga_beli: { type: Number, required: true },
   profit: { type: Number, required: true },
   total_profit: { type: Number, required: true },
+  realized_profit: { type: Number, required: false },
   qty: { type: Number, required: true },
   details: { type: String }
 });
