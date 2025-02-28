@@ -106,6 +106,9 @@ const BarcodeScanner = ({ onDetected }) => {
       <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       <audio ref={beepSound} src="/beep.mp3" preload="auto"></audio>
 
+
+
+
       {scannedCode ? (
         <div style={styles.resultContainer}>
           <p style={styles.resultText}><strong>Scanned Code:</strong> {scannedCode}</p>
@@ -115,7 +118,18 @@ const BarcodeScanner = ({ onDetected }) => {
         </div>
 
       ) : (
+        <div>
         <p style={styles.instruction}>Arahkan kamera ke barcode...</p>
+        <div className="flex justify-center">
+        <button
+          onClick={() => onDetected(".")}
+          className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform duration-200 hover:shadow-2xl"
+        >
+          ✨ Isi Barcode Manual ✨
+        </button>
+      </div>
+        </div>
+        
       )}
     </div>
   );
